@@ -7,23 +7,22 @@ test('Sales validation debug run', async ({ page }) => {
   // =========================================================
   // LOGIN
   // =========================================================
+  //await:  Means wait until this step is finished
+  //domcontentloaded means: HTML structure is loaded - Page is NOT fully loaded - usefull for login page
   await page.goto('https://devv2.clickbacon.com/login', {
     waitUntil: 'domcontentloaded'
   });
 
-  await page.pause();
+  //await page.pause();
 
-  await page.locator('#email > div > div > input')
-    .fill('ronit@gmail.com');
-
-  await page.locator('input[type="password"]')
-    .fill('Clickbacon12@@@');
-
+  await page.fill('input[type="email"]', 'manasa.p+9085@polynomial.ai');
+  await page.fill('input[type="password"]', 'Manasa@1666');
   await page.click('button:has-text("Login")');
 
-  await page.waitForLoadState('networkidle');
+  await page.waitForURL('**/dashboard');
+  console.log('✅ Login done');
 
-  await page.pause();
+  //await page.pause();
 
   // =========================================================
   // TRANSACTION → SALES
@@ -33,7 +32,7 @@ test('Sales validation debug run', async ({ page }) => {
 
   await page.waitForLoadState('networkidle');
 
-  await page.pause();
+ // await page.pause();
 
   // -------------------------
   // FILTER → THIS MONTH
@@ -44,11 +43,12 @@ test('Sales validation debug run', async ({ page }) => {
   await page.waitForLoadState('networkidle');
   await page.waitForTimeout(2000);
 
-  await page.pause();
+  //await page.pause();
 
   // =========================================================
   // TRANSACTION TOTAL
   // =========================================================
+
   const transactionAmounts = await page.$$eval('tbody tr', (rows) => {
 
     return rows.map(row => {
@@ -64,12 +64,12 @@ test('Sales validation debug run', async ({ page }) => {
 
   });
 
-  const salesTransactionTotal = transactionAmounts
-    .reduce((sum, val) => sum + val, 0);
+  const salesTransactionTotal =
+    transactionAmounts.reduce((sum, val) => sum + val, 0);
 
   console.log('🟢 Transaction Sales Total:', salesTransactionTotal);
 
-  await page.pause();
+  //await page.pause();
 
   // =========================================================
   // REPORTS
@@ -80,14 +80,12 @@ test('Sales validation debug run', async ({ page }) => {
   await page.waitForLoadState('networkidle');
   await page.waitForTimeout(3000);
 
-  // toggle ON
   const toggle = page.locator('text=Show All Accounts');
   await toggle.waitFor({ state: 'visible', timeout: 15000 });
   await toggle.click();
 
   await page.waitForTimeout(3000);
 
-  // scroll (important for lazy UI)
   await page.mouse.wheel(1000, 0);
   await page.waitForTimeout(1000);
 
@@ -99,6 +97,7 @@ test('Sales validation debug run', async ({ page }) => {
   });
 
   await row.waitFor({ state: 'visible', timeout: 15000 });
+
   await row.scrollIntoViewIfNeeded();
 
   const reportSalesText = await row
@@ -117,7 +116,7 @@ test('Sales validation debug run', async ({ page }) => {
   console.log('🔵 Reports Sales Total:', reportSalesTotal);
 
   // =========================================================
-  // FINAL ASSERTION (MISSING IN YOUR CODE)
+  // FINAL ASSERTION
   // =========================================================
   console.log('-----------------------------');
   console.log('Transaction:', salesTransactionTotal);
@@ -125,4 +124,5 @@ test('Sales validation debug run', async ({ page }) => {
   console.log('-----------------------------');
 
   expect(reportSalesTotal).toBe(salesTransactionTotal);
+
 });
